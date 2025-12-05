@@ -20,29 +20,35 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS PROFESSIONNEL (VERSION 1.5 - CHIRURGICALE) ---
+# --- CSS CHIRURGICAL (Réparation Menu + Suppression Manage App) ---
 st.markdown("""
     <style>
-        /* 2. On cache le Footer */
-        footer {visibility: hidden !important;}
+        /* 1. CACHER LE BOUTON 'MANAGE APP' ET LA TOOLBAR DE DROITE */
+        /* On cible spécifiquement la barre d'outils en haut à droite */
+        [data-testid="stToolbar"] {
+            visibility: hidden !important;
+            height: 0px !important;
+        }
         
-        /* 3. On cache la décoration arc-en-ciel en haut */
-        [data-testid="stDecoration"] {display: none;}
-        
-        /* 4. IMPORTANT : On NE CACHE PAS le Header entier */
-        /* On le rend juste transparent pour que le bouton 'Hamburger' (Ouvrir Sidebar) reste visible */
+        /* 2. NE PAS CACHER LE HEADER, MAIS LE RENDRE TRANSPARENT */
+        /* Cela permet au bouton Menu de gauche de rester cliquable */
         header {
             background-color: transparent !important;
         }
 
-        /* 5. On s'assure que le bouton pour rouvrir la sidebar est visible (Z-Index élevé) */
+        /* 3. FORCER L'AFFICHAGE DU BOUTON MENU (HAMBURGER) */
         [data-testid="stSidebarCollapsedControl"] {
-            z-index: 999999 !important;
             display: block !important;
-            color: #00FF00 !important; /* On le met en vert pour qu'il se voie bien */
+            visibility: visible !important;
+            color: #00FF00 !important; /* Vert fluo pour le voir partout */
+            z-index: 1000000 !important;
         }
 
-        /* 6. Design des Titres */
+        /* 4. Cacher le Footer et la Décoration */
+        footer {visibility: hidden !important;}
+        [data-testid="stDecoration"] {display: none;}
+
+        /* 5. Design des Titres */
         .main-title {
             font-size: 3.5em; 
             background: -webkit-linear-gradient(left, #00FF00, #00AA00);
@@ -51,15 +57,14 @@ st.markdown("""
             font-weight: bold;
             padding-top: 10px;
         }
-        .sub-title {color: #CCCCCC; font-size: 1.2em;}
+        .sub-title {color: gray; font-size: 1.2em;}
         
-        /* 7. Fond des cartes */
+        /* 6. Fond des cartes (Compatible Mode Clair/Sombre) */
         .metric-card {
-            background-color: #1E1E1E;
             padding: 15px;
             border-radius: 10px;
             border: 1px solid #333;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
     </style>
 """, unsafe_allow_html=True)
@@ -107,7 +112,7 @@ def main():
     mutation_type = st.sidebar.selectbox("Cible Mutation", ["GGG (Type A - Cancer)", "TTT (Type B - Rare)"])
     
     st.sidebar.markdown("---")
-    st.sidebar.info("Version : 1.5 (Stable)") # VÉRIFIE QUE TU VOIS ÇA
+    st.sidebar.info("Version : 1.6 (Flexible)") 
     st.sidebar.caption("Architecte : **Sadio Diagne**")
 
     # --- ZONE PRINCIPALE ---
@@ -145,7 +150,8 @@ def main():
             html_dna = ""
             for base in dna_letters:
                 colors = {'A': '#50C878', 'C': '#FFD700', 'G': '#FF4B4B', 'T': '#1E90FF'}
-                html_dna += f"<span style='font-size: 1.8em; padding: 2px 8px; border: 1px solid #444; margin: 2px; border-radius: 4px; background-color: #222; color: {colors[base]}'>{base}</span>"
+                # En mode clair, on veut que le texte soit lisible, donc on garde des couleurs vives
+                html_dna += f"<span style='font-size: 1.8em; padding: 2px 8px; border: 1px solid #777; margin: 2px; border-radius: 4px; background-color: rgba(128,128,128,0.1); color: {colors[base]}'>{base}</span>"
             st.markdown(f"<div style='text-align: center; margin-top: 15px;'>{html_dna}</div>", unsafe_allow_html=True)
         else:
             st.info("En attente d'échantillon...")
@@ -167,11 +173,8 @@ def main():
             ))
             fig_attn.update_layout(
                 title="Corrélation Inter-Qubits",
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
                 height=300,
-                margin=dict(l=20, r=20, t=40, b=20),
-                font=dict(color='#CCCCCC')
+                margin=dict(l=20, r=20, t=40, b=20)
             )
             st.plotly_chart(fig_attn, use_container_width=True)
         else:
@@ -243,13 +246,10 @@ def main():
                     scene=dict(
                         xaxis=dict(visible=False), 
                         yaxis=dict(visible=False), 
-                        zaxis=dict(visible=False),
-                        bgcolor='rgba(0,0,0,0)'
+                        zaxis=dict(visible=False)
                     ),
-                    paper_bgcolor='rgba(0,0,0,0)',
                     height=300,
-                    margin=dict(l=0, r=0, b=0, t=30),
-                    font=dict(color='#CCCCCC')
+                    margin=dict(l=0, r=0, b=0, t=30)
                 )
                 st.plotly_chart(fig_bloch, use_container_width=True)
 
