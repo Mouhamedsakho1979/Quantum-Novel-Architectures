@@ -20,28 +20,35 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS PROFESSIONNEL (VERSION CORRIGÉE 1.4) ---
+# --- CSS PROFESSIONNEL (VERSION 1.5 - CHIRURGICALE) ---
 st.markdown("""
     <style>
-        /* 1. Cacher le bouton 'Manage App', 'Deploy', et les 3 points */
+        /* 1. On cache le MENU DE DROITE (Manage app, Deploy, 3 points) */
         [data-testid="stToolbar"] {
             visibility: hidden !important;
             display: none !important;
         }
         
-        /* 2. Cacher le Footer 'Made with Streamlit' */
+        /* 2. On cache le Footer */
         footer {visibility: hidden !important;}
         
-        /* 3. Cacher la décoration colorée en haut (la ligne arc-en-ciel) */
+        /* 3. On cache la décoration arc-en-ciel en haut */
         [data-testid="stDecoration"] {display: none;}
         
-        /* 4. ON GARDE LE HEADER VISIBLE MAIS ON CACHE SON FOND */
-        /* C'est crucial pour que le bouton de la sidebar reste cliquable */
+        /* 4. IMPORTANT : On NE CACHE PAS le Header entier */
+        /* On le rend juste transparent pour que le bouton 'Hamburger' (Ouvrir Sidebar) reste visible */
         header {
             background-color: transparent !important;
         }
 
-        /* 5. Design des Titres */
+        /* 5. On s'assure que le bouton pour rouvrir la sidebar est visible (Z-Index élevé) */
+        [data-testid="stSidebarCollapsedControl"] {
+            z-index: 999999 !important;
+            display: block !important;
+            color: #00FF00 !important; /* On le met en vert pour qu'il se voie bien */
+        }
+
+        /* 6. Design des Titres */
         .main-title {
             font-size: 3.5em; 
             background: -webkit-linear-gradient(left, #00FF00, #00AA00);
@@ -52,7 +59,7 @@ st.markdown("""
         }
         .sub-title {color: #CCCCCC; font-size: 1.2em;}
         
-        /* 6. Fond des cartes */
+        /* 7. Fond des cartes */
         .metric-card {
             background-color: #1E1E1E;
             padding: 15px;
@@ -106,7 +113,7 @@ def main():
     mutation_type = st.sidebar.selectbox("Cible Mutation", ["GGG (Type A - Cancer)", "TTT (Type B - Rare)"])
     
     st.sidebar.markdown("---")
-    st.sidebar.warning("Version : 1.4 (Finale)") # REPÈRE VISUEL POUR TOI
+    st.sidebar.info("Version : 1.5 (Stable)") # VÉRIFIE QUE TU VOIS ÇA
     st.sidebar.caption("Architecte : **Sadio Diagne**")
 
     # --- ZONE PRINCIPALE ---
