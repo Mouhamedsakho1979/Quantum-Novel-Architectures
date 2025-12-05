@@ -1,6 +1,7 @@
 streamlit
 torch
 pennylane==0.31.0
-numpy
+autoray==0.6.12
+numpy==1.23.5
 plotly
 scikit-learn
