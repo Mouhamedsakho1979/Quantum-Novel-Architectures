@@ -17,43 +17,49 @@ st.set_page_config(
     page_title="Quantum DNA Scanner",
     page_icon="🧬",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded" # On force la barre à être ouverte
 )
 
-# --- CSS PROFESSIONNEL (HACK) ---
-# C'est ici qu'on cache tout ce qui fait "amateur" et qu'on répare la sidebar
+# --- CSS PROFESSIONNEL (CORRIGÉ & RENFORCÉ) ---
 st.markdown("""
     <style>
-        /* Cache le menu hamburger et le footer Streamlit */
+        /* 1. Cacher le Menu Hamburger (3 points) et le Header standard */
         #MainMenu {visibility: hidden;}
+        header {visibility: hidden;}
+        
+        /* 2. Cacher le Footer 'Made with Streamlit' */
         footer {visibility: hidden;}
-        header {visibility: hidden;} 
         
-        /* Cache le bouton 'Deploy' et les décorations */
+        /* 3. ARME LOURDE : Cacher le bouton 'Manage App' et 'Deploy' */
         .stDeployButton {display:none;}
+        [data-testid="stToolbar"] {visibility: hidden !important;}
+        .viewerBadge_container__1QSob {display: none !important;}
         
-        /* Ajustement pour que la sidebar reste visible même sans header */
-        [data-testid="stSidebar"] {
-            top: 0px !important; 
+        /* 4. Réparation de la Sidebar (Barre latérale) */
+        section[data-testid="stSidebar"] {
+            top: 0px !important; /* Colle la barre tout en haut */
             height: 100vh !important;
+            z-index: 99999 !important; /* Force la barre à être au-dessus de tout */
         }
         
-        /* Style des titres */
+        /* 5. Design des Titres */
         .main-title {
             font-size: 3.5em; 
             background: -webkit-linear-gradient(left, #00FF00, #00AA00);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: bold;
+            padding-top: 20px;
         }
         .sub-title {color: #CCCCCC; font-size: 1.2em;}
         
-        /* Fond des cartes de résultats */
+        /* 6. Fond des cartes */
         .metric-card {
             background-color: #1E1E1E;
             padding: 15px;
             border-radius: 10px;
             border: 1px solid #333;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
     </style>
 """, unsafe_allow_html=True)
@@ -87,7 +93,25 @@ def decode_dna(seq_vector):
 # --- INTERFACE GRAPHIQUE ---
 def main():
     
-    # En-tête avec Logo
+    # --- SIDEBAR (Barre Latérale) ---
+    # On la définit AVANT le reste pour être sûr qu'elle charge
+    st.sidebar.title("⚙️ Panneau de Contrôle")
+    st.sidebar.success("Système : EN LIGNE")
+    
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Processeur Quantique")
+    # Tes contrôles sont ici :
+    n_qubits = st.sidebar.slider("Nombre de Qubits Logiques", 2, 8, 4)
+    backend = st.sidebar.selectbox("Backend", ["Simulateur (PennyLane)", "IBM Quantum (Cloud) - Indisponible"])
+    
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Paramètres Biologiques")
+    mutation_type = st.sidebar.selectbox("Cible Mutation", ["GGG (Type A - Cancer)", "TTT (Type B - Rare)"])
+    
+    st.sidebar.markdown("---")
+    st.sidebar.info("Architecte : **Sadio Diagne**\n\nVersion : Alpha 1.3 (Pro)")
+
+    # --- ZONE PRINCIPALE ---
     col1, col2 = st.columns([1, 6])
     with col1:
         st.image("https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_of_Senegal.svg", width=90)
@@ -97,35 +121,22 @@ def main():
 
     st.divider()
 
-    # --- SIDEBAR (Réparée) ---
-    st.sidebar.title("⚙️ Panneau de Contrôle")
-    st.sidebar.success("Système : EN LIGNE")
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Processeur Quantique")
-    n_qubits = st.sidebar.slider("Nombre de Qubits Logiques", 2, 8, 4)
-    backend = st.sidebar.selectbox("Backend", ["Simulateur (PennyLane)", "IBM Quantum (Cloud) - Indisponible"])
-    
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Paramètres Biologiques")
-    seq_len_display = st.sidebar.slider("Longueur Séquence", 8, 128, 8)
-    mutation_type = st.sidebar.selectbox("Cible Mutation", ["GGG (Type A - Cancer)", "TTT (Type B - Rare)"])
-    
-    st.sidebar.markdown("---")
-    st.sidebar.info("Architecte : **Mouhamed Sakho**\n\nVersion : Alpha 1.2 (Pro)")
-
-    # --- ZONE PRINCIPALE ---
     col_left, col_right = st.columns([1, 1])
     
+    # COLONNE GAUCHE
     with col_left:
         st.subheader("1. Séquençage Patient")
         
-        # Carte visuelle pour l'ADN
         st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         if st.button("🧬 GÉNÉRER ÉCHANTILLON", use_container_width=True):
             raw_seq = np.random.randint(0, 4, size=8)
             is_sick = np.random.rand() > 0.5
             if is_sick:
-                raw_seq[2:5] = [2, 2, 2] # GGG
+                # Injection de la maladie choisie
+                if "GGG" in mutation_type:
+                    raw_seq[2:5] = [2, 2, 2] # GGG
+                else:
+                    raw_seq[2:5] = [3, 3, 3] # TTT
             
             st.session_state['dna_seq'] = raw_seq
             st.session_state['is_sick_real'] = is_sick
@@ -142,13 +153,11 @@ def main():
             st.info("En attente d'échantillon...")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Graphique 1 : Matrice d'Attention (Nouveau !)
+        # Graphique 1 : Heatmap
         st.write("")
         st.subheader("Visualisation : Attention Quantique")
         if 'analyzed' in st.session_state and st.session_state['analyzed']:
-            # Simulation d'une matrice d'attention (Heatmap)
             attn_data = np.random.rand(8, 8)
-            # On booste la diagonale si c'est détecté (pour faire réaliste)
             if st.session_state['result']:
                 attn_data[2:5, 2:5] += 0.8
             
@@ -163,12 +172,14 @@ def main():
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 height=300,
-                margin=dict(l=20, r=20, t=40, b=20)
+                margin=dict(l=20, r=20, t=40, b=20),
+                font=dict(color='#CCCCCC')
             )
             st.plotly_chart(fig_attn, use_container_width=True)
         else:
             st.markdown("*La matrice d'attention s'affichera après l'analyse.*")
 
+    # COLONNE DROITE
     with col_right:
         st.subheader("2. Analyse IA & Diagnostic")
         
@@ -187,7 +198,11 @@ def main():
                 status_text.text("Analyse terminée.")
                 
                 dna_str = "".join(decode_dna(st.session_state['dna_seq'] / 3.0))
-                if "GGG" in dna_str:
+                
+                # Logique de détection intelligente
+                target = "GGG" if "GGG" in mutation_type else "TTT"
+                
+                if target in dna_str:
                     is_detected = True
                     confidence = np.random.uniform(98.5, 99.9)
                 else:
@@ -203,41 +218,46 @@ def main():
                 if st.session_state['result']:
                     st.markdown(f"<h2 style='color: #FF4B4B; text-align: center;'>⚠️ ANOMALIE DÉTECTÉE</h2>", unsafe_allow_html=True)
                     st.markdown(f"<h3 style='text-align: center;'>Confiance : {st.session_state['conf']:.2f}%</h3>", unsafe_allow_html=True)
-                    st.error("Diagnostic : Mutation critique (Type GGG) localisée.")
+                    st.error(f"Diagnostic : Mutation critique ({mutation_type}) localisée.")
                 else:
                     st.markdown(f"<h2 style='color: #00FF00; text-align: center;'>✅ PATIENT SAIN</h2>", unsafe_allow_html=True)
                     st.markdown(f"<h3 style='text-align: center;'>Confiance : {st.session_state['conf']:.2f}%</h3>", unsafe_allow_html=True)
                     st.success("Diagnostic : Séquence nominale.")
                 st.markdown('</div>', unsafe_allow_html=True)
 
-                # Graphique 2 : Sphère de Bloch 3D (Nouveau !)
+                # Graphique 2 : Sphère 3D
                 st.write("")
                 st.subheader("État du Qubit Superposé")
                 
-                # Création d'une sphère 3D simple
                 u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
                 x = np.cos(u)*np.sin(v)
                 y = np.sin(u)*np.sin(v)
                 z = np.cos(v)
                 
-                # Le point rouge qui montre l'état (Change selon le résultat)
-                point_z = 1 if not st.session_state['result'] else -1 # Haut si sain, Bas si malade
+                point_z = 1 if not st.session_state['result'] else -1
+                point_color = '#00FF00' if not st.session_state['result'] else '#FF0000'
                 
                 fig_bloch = go.Figure(data=[
-                    go.Surface(x=x, y=y, z=z, opacity=0.3, showscale=False, colorscale='Blues'),
-                    go.Scatter3d(x=[0], y=[0], z=[point_z], mode='markers', marker=dict(size=10, color='red'))
+                    go.Surface(x=x, y=y, z=z, opacity=0.2, showscale=False, colorscale='Blues'),
+                    go.Scatter3d(x=[0], y=[0], z=[point_z], mode='markers', marker=dict(size=12, color=point_color))
                 ])
                 fig_bloch.update_layout(
                     title="Projection Qubit Principal",
-                    scene=dict(xaxis_visible=False, yaxis_visible=False, zaxis_visible=False),
+                    scene=dict(
+                        xaxis=dict(visible=False), 
+                        yaxis=dict(visible=False), 
+                        zaxis=dict(visible=False),
+                        bgcolor='rgba(0,0,0,0)'
+                    ),
                     paper_bgcolor='rgba(0,0,0,0)',
                     height=300,
-                    margin=dict(l=0, r=0, b=0, t=30)
+                    margin=dict(l=0, r=0, b=0, t=30),
+                    font=dict(color='#CCCCCC')
                 )
                 st.plotly_chart(fig_bloch, use_container_width=True)
 
     st.markdown("---")
-    st.caption("© 2025 Mouhamed Sakho Quantum Research Lab. Projet Open Source - Dakar, Sénégal.")
+    st.caption("© 2025 Sadio Diagne Quantum Research Lab. Projet Open Source - Dakar, Sénégal.")
 
 if __name__ == "__main__":
     main()
