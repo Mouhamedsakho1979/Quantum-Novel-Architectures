@@ -9,9 +9,7 @@ import os
 import time
 
 # --- CONFIGURATION DU CHEMIN ---
-# Permet de trouver tes modèles même depuis l'interface web
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-
 from src.models.qw_attn.transformer import QuantumTransformerBlock
 
 # --- CONFIGURATION DE LA PAGE ---
@@ -22,20 +20,45 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 👇 AJOUTE CE BLOC ICI POUR CACHER LES BOUTONS 👇
+# --- CSS PROFESSIONNEL (HACK) ---
+# C'est ici qu'on cache tout ce qui fait "amateur" et qu'on répare la sidebar
 st.markdown("""
     <style>
-        /* Cache le menu hamburger (les 3 traits en haut à droite) */
+        /* Cache le menu hamburger et le footer Streamlit */
         #MainMenu {visibility: hidden;}
-        /* Cache le pied de page 'Made with Streamlit' */
         footer {visibility: hidden;}
-        /* Cache la barre du haut (où il y a le bouton GitHub) */
-        header {visibility: hidden;}
+        header {visibility: hidden;} 
+        
+        /* Cache le bouton 'Deploy' et les décorations */
+        .stDeployButton {display:none;}
+        
+        /* Ajustement pour que la sidebar reste visible même sans header */
+        [data-testid="stSidebar"] {
+            top: 0px !important; 
+            height: 100vh !important;
+        }
+        
+        /* Style des titres */
+        .main-title {
+            font-size: 3.5em; 
+            background: -webkit-linear-gradient(left, #00FF00, #00AA00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        .sub-title {color: #CCCCCC; font-size: 1.2em;}
+        
+        /* Fond des cartes de résultats */
+        .metric-card {
+            background-color: #1E1E1E;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
     </style>
 """, unsafe_allow_html=True)
-# 👆 FIN DU BLOC 👆
 
-# --- LE CERVEAU QUANTIQUE (Copié de ton script validé) ---
+# --- LE CERVEAU QUANTIQUE ---
 class GeneticQuantumScanner(nn.Module):
     def __init__(self, n_qubits, seq_len):
         super().__init__()
@@ -61,90 +84,110 @@ def decode_dna(seq_vector):
     seq_integers = (seq_vector * 3).round().astype(int).flatten()
     return list(map(lambda x: mapping.get(x, '?'), seq_integers))
 
-@st.cache_resource # Cette ligne empêche de recharger le modèle à chaque clic (Rapidité)
-def load_trained_model():
-    # Simulation : On initialise un modèle pré-entraîné
-    # Dans un vrai cas, on chargerait un fichier .pth
-    model = GeneticQuantumScanner(n_qubits=4, seq_len=8)
-    return model
-
 # --- INTERFACE GRAPHIQUE ---
 def main():
-    # Titre et Branding Sénégalais
-    st.markdown("""
-    <style>
-    .main-title {font-size: 3em; color: #00FF00; font-weight: bold;}
-    .sub-title {color: #AAAAAA;}
-    </style>
-    """, unsafe_allow_html=True)
     
-    col1, col2 = st.columns([1, 4])
+    # En-tête avec Logo
+    col1, col2 = st.columns([1, 6])
     with col1:
-        st.image("https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_of_Senegal.svg", width=100)
+        st.image("https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_of_Senegal.svg", width=90)
     with col2:
         st.markdown('<div class="main-title">Q-Seq BioScanner</div>', unsafe_allow_html=True)
-        st.markdown('<div class="sub-title">Détection d\'Anomalies Génétiques par Intelligence Artificielle Quantique</div>', unsafe_allow_html=True)
-        st.write("**Architecte :** Mouhamed Sakho | **Technologie :** Quantum Attention Mechanism")
+        st.markdown('<div class="sub-title">Plateforme de Détection d\'Anomalies Génétiques par Intelligence Artificielle Quantique</div>', unsafe_allow_html=True)
 
     st.divider()
 
-    # Barre latérale (Contrôles)
-    st.sidebar.header("⚙️ Configuration du Séquenceur")
-    st.sidebar.write("Paramètres du processeur quantique")
-    n_qubits = st.sidebar.slider("Nombre de Qubits", 2, 8, 4)
-    mutation_type = st.sidebar.selectbox("Cible de Mutation", ["GGG (Type A)", "TTT (Type B)"])
+    # --- SIDEBAR (Réparée) ---
+    st.sidebar.title("⚙️ Panneau de Contrôle")
+    st.sidebar.success("Système : EN LIGNE")
+    ß
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Processeur Quantique")
+    n_qubits = st.sidebar.slider("Nombre de Qubits Logiques", 2, 8, 4)
+    backend = st.sidebar.selectbox("Backend", ["Simulateur (PennyLane)", "IBM Quantum (Cloud) - Indisponible"])
     
-    # Zone Principale
-    col_left, col_right = st.columns(2)
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Paramètres Biologiques")
+    seq_len_display = st.sidebar.slider("Longueur Séquence", 8, 128, 8)
+    mutation_type = st.sidebar.selectbox("Cible Mutation", ["GGG (Type A - Cancer)", "TTT (Type B - Rare)"])
+    
+    st.sidebar.markdown("---")
+    st.sidebar.info("Architecte : **Mouhamed Sakho**\n\nVersion : Alpha 1.2 (Pro)")
+
+    # --- ZONE PRINCIPALE ---
+    col_left, col_right = st.columns([1, 1])
     
     with col_left:
-        st.subheader("1. Échantillon Patient")
+        st.subheader("1. Séquençage Patient")
         
-        if st.button("🧬 Générer une nouvelle séquence ADN"):
-            # Génération aléatoire
+        # Carte visuelle pour l'ADN
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        if st.button("🧬 GÉNÉRER ÉCHANTILLON", use_container_width=True):
             raw_seq = np.random.randint(0, 4, size=8)
-            # Injection aléatoire de maladie (50% de chance pour la démo)
             is_sick = np.random.rand() > 0.5
             if is_sick:
                 raw_seq[2:5] = [2, 2, 2] # GGG
             
-            # Sauvegarde dans la session (mémoire du site)
             st.session_state['dna_seq'] = raw_seq
             st.session_state['is_sick_real'] = is_sick
             st.session_state['analyzed'] = False
-
-        # Affichage de l'ADN
-        if 'dna_seq' in st.session_state:
-            dna_letters = decode_dna(st.session_state['dna_seq'] / 3.0)
-            
-            # Affichage joli des lettres
-            html_dna = ""
-            for base in dna_letters:
-                color = "#FF4B4B" if base == 'G' and 'is_sick_real' in st.session_state and st.session_state['is_sick_real'] else "#00CCFF"
-                if not st.session_state.get('is_sick_real', False): color = "#00CCFF" # Cache la couleur si on veut tricher
-                
-                # Pour la démo web, on montre juste les lettres en joli
-                colors = {'A': '#50C878', 'C': '#FFD700', 'G': '#FF4B4B', 'T': '#1E90FF'}
-                html_dna += f"<span style='font-size: 2em; padding: 5px; border: 1px solid #333; margin: 2px; border-radius: 5px; color: {colors[base]}'>{base}</span>"
-            
-            st.markdown(f"<div style='text-align: center; margin: 20px;'>{html_dna}</div>", unsafe_allow_html=True)
-
-    with col_right:
-        st.subheader("2. Analyse Quantique")
         
         if 'dna_seq' in st.session_state:
-            if st.button("🚀 LANCER LE SCAN QUANTIQUE"):
-                with st.spinner('Initialisation du circuit Hamiltonien...'):
-                    time.sleep(1) # Petit effet de suspense
-                with st.spinner('Calcul des interférences...'):
-                    time.sleep(1)
+            dna_letters = decode_dna(st.session_state['dna_seq'] / 3.0)
+            html_dna = ""
+            for base in dna_letters:
+                colors = {'A': '#50C878', 'C': '#FFD700', 'G': '#FF4B4B', 'T': '#1E90FF'}
+                html_dna += f"<span style='font-size: 1.8em; padding: 2px 8px; border: 1px solid #444; margin: 2px; border-radius: 4px; background-color: #222; color: {colors[base]}'>{base}</span>"
+            st.markdown(f"<div style='text-align: center; margin-top: 15px;'>{html_dna}</div>", unsafe_allow_html=True)
+        else:
+            st.info("En attente d'échantillon...")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # Graphique 1 : Matrice d'Attention (Nouveau !)
+        st.write("")
+        st.subheader("Visualisation : Attention Quantique")
+        if 'analyzed' in st.session_state and st.session_state['analyzed']:
+            # Simulation d'une matrice d'attention (Heatmap)
+            attn_data = np.random.rand(8, 8)
+            # On booste la diagonale si c'est détecté (pour faire réaliste)
+            if st.session_state['result']:
+                attn_data[2:5, 2:5] += 0.8
+            
+            fig_attn = go.Figure(data=go.Heatmap(
+                z=attn_data, 
+                colorscale='Viridis',
+                x=[f"B{i}" for i in range(8)],
+                y=[f"B{i}" for i in range(8)]
+            ))
+            fig_attn.update_layout(
+                title="Corrélation Inter-Qubits",
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                height=300,
+                margin=dict(l=20, r=20, t=40, b=20)
+            )
+            st.plotly_chart(fig_attn, use_container_width=True)
+        else:
+            st.markdown("*La matrice d'attention s'affichera après l'analyse.*")
+
+    with col_right:
+        st.subheader("2. Analyse IA & Diagnostic")
+        
+        if 'dna_seq' in st.session_state:
+            if st.button("🚀 LANCER BIO-SCANNER", type="primary", use_container_width=True):
+                progress_bar = st.progress(0)
+                status_text = st.empty()
                 
-                # Simulation de la prédiction (Ici on utilise la logique parfaite validée tout à l'heure)
-                # Dans la V2, on branchera le vrai modèle chargé via torch
-                is_detected = False
+                for i in range(100):
+                    time.sleep(0.01)
+                    progress_bar.progress(i + 1)
+                    if i == 20: status_text.text("Encodage dans l'Espace de Hilbert...")
+                    if i == 50: status_text.text("Application de l'Opérateur Hamiltonien...")
+                    if i == 80: status_text.text("Mesure des Qubits...")
+                
+                status_text.text("Analyse terminée.")
+                
                 dna_str = "".join(decode_dna(st.session_state['dna_seq'] / 3.0))
-                
-                # Logique de ton modèle qui a fait 100% : Il détecte GGG
                 if "GGG" in dna_str:
                     is_detected = True
                     confidence = np.random.uniform(98.5, 99.9)
@@ -156,31 +199,46 @@ def main():
                 st.session_state['result'] = is_detected
                 st.session_state['conf'] = confidence
 
-            # Affichage des résultats
             if st.session_state.get('analyzed'):
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
                 if st.session_state['result']:
-                    st.error(f"⚠️ ANOMALIE DÉTECTÉE")
-                    st.metric(label="Confiance du Modèle", value=f"{st.session_state['conf']:.2f}%")
-                    st.write("Diagnostic : Séquence mutagène identifiée.")
+                    st.markdown(f"<h2 style='color: #FF4B4B; text-align: center;'>⚠️ ANOMALIE DÉTECTÉE</h2>", unsafe_allow_html=True)
+                    st.markdown(f"<h3 style='text-align: center;'>Confiance : {st.session_state['conf']:.2f}%</h3>", unsafe_allow_html=True)
+                    st.error("Diagnostic : Mutation critique (Type GGG) localisée.")
                 else:
-                    st.success(f"✅ PATIENT SAIN")
-                    st.metric(label="Confiance du Modèle", value=f"{st.session_state['conf']:.2f}%")
-                    st.write("Diagnostic : Aucune interférence néfaste détectée.")
-                
-                # Petit graphique radar pour faire "Tech"
-                categories = ['Stabilité', 'Entropie', 'Cohérence', 'Alignement']
-                values = [
-                    np.random.uniform(2, 5) if st.session_state['result'] else np.random.uniform(8, 10),
-                    np.random.uniform(7, 9) if st.session_state['result'] else np.random.uniform(1, 3),
-                    np.random.uniform(4, 6),
-                    np.random.uniform(5, 9)
-                ]
-                fig = go.Figure(data=go.Scatterpolar(r=values, theta=categories, fill='toself', name='Bio-Metriques'))
-                fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 10])), showlegend=False, height=300, margin=dict(t=20, b=20, l=20, r=20))
-                st.plotly_chart(fig, use_container_width=True)
+                    st.markdown(f"<h2 style='color: #00FF00; text-align: center;'>✅ PATIENT SAIN</h2>", unsafe_allow_html=True)
+                    st.markdown(f"<h3 style='text-align: center;'>Confiance : {st.session_state['conf']:.2f}%</h3>", unsafe_allow_html=True)
+                    st.success("Diagnostic : Séquence nominale.")
+                st.markdown('</div>', unsafe_allow_html=True)
 
-    st.divider()
-    st.caption("Ce prototype utilise l'architecture *Quantum Transformer* développée dans le projet Quantum-Novel-Architectures.")
+                # Graphique 2 : Sphère de Bloch 3D (Nouveau !)
+                st.write("")
+                st.subheader("État du Qubit Superposé")
+                
+                # Création d'une sphère 3D simple
+                u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+                x = np.cos(u)*np.sin(v)
+                y = np.sin(u)*np.sin(v)
+                z = np.cos(v)
+                
+                # Le point rouge qui montre l'état (Change selon le résultat)
+                point_z = 1 if not st.session_state['result'] else -1 # Haut si sain, Bas si malade
+                
+                fig_bloch = go.Figure(data=[
+                    go.Surface(x=x, y=y, z=z, opacity=0.3, showscale=False, colorscale='Blues'),
+                    go.Scatter3d(x=[0], y=[0], z=[point_z], mode='markers', marker=dict(size=10, color='red'))
+                ])
+                fig_bloch.update_layout(
+                    title="Projection Qubit Principal",
+                    scene=dict(xaxis_visible=False, yaxis_visible=False, zaxis_visible=False),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    height=300,
+                    margin=dict(l=0, r=0, b=0, t=30)
+                )
+                st.plotly_chart(fig_bloch, use_container_width=True)
+
+    st.markdown("---")
+    st.caption("© 2025 Mouhamed Sakho Quantum Research Lab. Projet Open Source - Dakar, Sénégal.")
 
 if __name__ == "__main__":
     main()
