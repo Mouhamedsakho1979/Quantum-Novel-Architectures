@@ -1,0 +1,17 @@
+ROADMAP DE RECHERCHE - Quantum Novel Architectures
+
+PHASE 1 : VALIDATION (Semaine 1)
+[ ] M1 : Accuracy > 85%
+[ ] M2 : Convergence vers [1,1]
+[ ] M3 : Cercle généré
+[ ] M4 : Sinus appris
+[ ] M5 : Fonction complexe apprise
+
+PHASE 2 : EXPÉRIMENTATION Q-SEQ (Semaine 2-3)
+[ ] Lancer Q-Seq
+[ ] Tester n_samples=50
+[ ] Tester SEQ_LEN=16
+
+PHASE 3 : DOCUMENTATION (Mois 2)
+[ ] Graphiques dans results/figures/
+[ ] Résumé final pour chaque architecture
