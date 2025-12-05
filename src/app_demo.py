@@ -100,7 +100,6 @@ def main():
     # --- SIDEBAR (Réparée) ---
     st.sidebar.title("⚙️ Panneau de Contrôle")
     st.sidebar.success("Système : EN LIGNE")
-    ß
     st.sidebar.markdown("---")
     st.sidebar.subheader("Processeur Quantique")
     n_qubits = st.sidebar.slider("Nombre de Qubits Logiques", 2, 8, 4)
