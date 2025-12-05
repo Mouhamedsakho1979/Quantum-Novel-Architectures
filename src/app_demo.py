@@ -23,12 +23,6 @@ st.set_page_config(
 # --- CSS PROFESSIONNEL (VERSION 1.5 - CHIRURGICALE) ---
 st.markdown("""
     <style>
-        /* 1. On cache le MENU DE DROITE (Manage app, Deploy, 3 points) */
-        [data-testid="stToolbar"] {
-            visibility: hidden !important;
-            display: none !important;
-        }
-        
         /* 2. On cache le Footer */
         footer {visibility: hidden !important;}
         
