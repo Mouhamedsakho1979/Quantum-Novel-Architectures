@@ -23,18 +23,6 @@ st.set_page_config(
 # --- CSS CHIRURGICAL (Réparation Menu + Suppression Manage App) ---
 st.markdown("""
     <style>
-        /* 1. CACHER LE BOUTON 'MANAGE APP' ET LA TOOLBAR DE DROITE */
-        /* On cible spécifiquement la barre d'outils en haut à droite */
-        [data-testid="stToolbar"] {
-            visibility: hidden !important;
-            height: 0px !important;
-        }
-        
-        /* 2. NE PAS CACHER LE HEADER, MAIS LE RENDRE TRANSPARENT */
-        /* Cela permet au bouton Menu de gauche de rester cliquable */
-        header {
-            background-color: transparent !important;
-        }
 
         /* 3. FORCER L'AFFICHAGE DU BOUTON MENU (HAMBURGER) */
         [data-testid="stSidebarCollapsedControl"] {
@@ -113,7 +101,7 @@ def main():
     
     st.sidebar.markdown("---")
     st.sidebar.info("Version : 1.6 (Flexible)") 
-    st.sidebar.caption("Architecte : **Sadio Diagne**")
+    st.sidebar.caption("Architecte : **Mouhamed Sakho**")
 
     # --- ZONE PRINCIPALE ---
     col1, col2 = st.columns([1, 6])
@@ -254,7 +242,7 @@ def main():
                 st.plotly_chart(fig_bloch, use_container_width=True)
 
     st.markdown("---")
-    st.caption("© 2025 Sadio Diagne Quantum Research Lab. Projet Open Source - Dakar, Sénégal.")
+    st.caption("© 2025 Mouhamed Sakho Quantum Research Lab. Projet Open Source - Dakar, Sénégal.")
 
 if __name__ == "__main__":
     main()
