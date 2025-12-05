@@ -22,6 +22,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# 👇 AJOUTE CE BLOC ICI POUR CACHER LES BOUTONS 👇
+st.markdown("""
+    <style>
+        /* Cache le menu hamburger (les 3 traits en haut à droite) */
+        #MainMenu {visibility: hidden;}
+        /* Cache le pied de page 'Made with Streamlit' */
+        footer {visibility: hidden;}
+        /* Cache la barre du haut (où il y a le bouton GitHub) */
+        header {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+# 👆 FIN DU BLOC 👆
+
 # --- LE CERVEAU QUANTIQUE (Copié de ton script validé) ---
 class GeneticQuantumScanner(nn.Module):
     def __init__(self, n_qubits, seq_len):
