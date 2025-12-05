@@ -17,31 +17,30 @@ st.set_page_config(
     page_title="Quantum DNA Scanner",
     page_icon="🧬",
     layout="wide",
-    initial_sidebar_state="expanded" # On force la barre à être ouverte
+    initial_sidebar_state="expanded"
 )
 
-# --- CSS PROFESSIONNEL (CORRIGÉ & RENFORCÉ) ---
+# --- CSS PROFESSIONNEL (VERSION CORRIGÉE 1.4) ---
 st.markdown("""
     <style>
-        /* 1. Cacher le Menu Hamburger (3 points) et le Header standard */
-        #MainMenu {visibility: hidden;}
-        header {visibility: hidden;}
-        
-        /* 2. Cacher le Footer 'Made with Streamlit' */
-        footer {visibility: hidden;}
-        
-        /* 3. ARME LOURDE : Cacher le bouton 'Manage App' et 'Deploy' */
-        .stDeployButton {display:none;}
-        [data-testid="stToolbar"] {visibility: hidden !important;}
-        .viewerBadge_container__1QSob {display: none !important;}
-        
-        /* 4. Réparation de la Sidebar (Barre latérale) */
-        section[data-testid="stSidebar"] {
-            top: 0px !important; /* Colle la barre tout en haut */
-            height: 100vh !important;
-            z-index: 99999 !important; /* Force la barre à être au-dessus de tout */
+        /* 1. Cacher le bouton 'Manage App', 'Deploy', et les 3 points */
+        [data-testid="stToolbar"] {
+            visibility: hidden !important;
+            display: none !important;
         }
         
+        /* 2. Cacher le Footer 'Made with Streamlit' */
+        footer {visibility: hidden !important;}
+        
+        /* 3. Cacher la décoration colorée en haut (la ligne arc-en-ciel) */
+        [data-testid="stDecoration"] {display: none;}
+        
+        /* 4. ON GARDE LE HEADER VISIBLE MAIS ON CACHE SON FOND */
+        /* C'est crucial pour que le bouton de la sidebar reste cliquable */
+        header {
+            background-color: transparent !important;
+        }
+
         /* 5. Design des Titres */
         .main-title {
             font-size: 3.5em; 
@@ -49,7 +48,7 @@ st.markdown("""
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: bold;
-            padding-top: 20px;
+            padding-top: 10px;
         }
         .sub-title {color: #CCCCCC; font-size: 1.2em;}
         
@@ -94,13 +93,11 @@ def decode_dna(seq_vector):
 def main():
     
     # --- SIDEBAR (Barre Latérale) ---
-    # On la définit AVANT le reste pour être sûr qu'elle charge
     st.sidebar.title("⚙️ Panneau de Contrôle")
     st.sidebar.success("Système : EN LIGNE")
     
     st.sidebar.markdown("---")
     st.sidebar.subheader("Processeur Quantique")
-    # Tes contrôles sont ici :
     n_qubits = st.sidebar.slider("Nombre de Qubits Logiques", 2, 8, 4)
     backend = st.sidebar.selectbox("Backend", ["Simulateur (PennyLane)", "IBM Quantum (Cloud) - Indisponible"])
     
@@ -109,7 +106,8 @@ def main():
     mutation_type = st.sidebar.selectbox("Cible Mutation", ["GGG (Type A - Cancer)", "TTT (Type B - Rare)"])
     
     st.sidebar.markdown("---")
-    st.sidebar.info("Architecte : **Sadio Diagne**\n\nVersion : Alpha 1.3 (Pro)")
+    st.sidebar.warning("Version : 1.4 (Finale)") # REPÈRE VISUEL POUR TOI
+    st.sidebar.caption("Architecte : **Sadio Diagne**")
 
     # --- ZONE PRINCIPALE ---
     col1, col2 = st.columns([1, 6])
@@ -132,7 +130,6 @@ def main():
             raw_seq = np.random.randint(0, 4, size=8)
             is_sick = np.random.rand() > 0.5
             if is_sick:
-                # Injection de la maladie choisie
                 if "GGG" in mutation_type:
                     raw_seq[2:5] = [2, 2, 2] # GGG
                 else:
@@ -199,7 +196,6 @@ def main():
                 
                 dna_str = "".join(decode_dna(st.session_state['dna_seq'] / 3.0))
                 
-                # Logique de détection intelligente
                 target = "GGG" if "GGG" in mutation_type else "TTT"
                 
                 if target in dna_str:
