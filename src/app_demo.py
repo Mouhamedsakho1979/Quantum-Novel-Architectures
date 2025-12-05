@@ -24,7 +24,6 @@ st.set_page_config(
 st.markdown("""
     <style>
         /* Toolbar et Footer cachés */
-        [data-testid="stToolbar"] {visibility: hidden !important; height: 0px !important;}
         footer {visibility: hidden !important;}
         [data-testid="stDecoration"] {display: none;}
 
@@ -98,7 +97,7 @@ def main():
     
     # --- SIDEBAR ---
     st.sidebar.title("⚙️ Labo Quantique")
-    st.sidebar.success("Mode : PHASE 2 (Avancé)")
+    st.sidebar.success("Mode : PHASE 1 (Avancé)")
     
     st.sidebar.markdown("### 1. Protocole")
     disease_mode = st.sidebar.selectbox("Cible Pathologique", 
@@ -109,14 +108,14 @@ def main():
                                     help="Seuil bas = Alerte facile (Détection Précoce).")
     
     st.sidebar.markdown("---")
-    st.sidebar.caption(f"Architecte : Sadio Diagne")
+    st.sidebar.caption(f"Architecte : Mouhamed Sakho")
 
     # --- MAIN ---
     col1, col2 = st.columns([1, 6])
     with col1:
         st.image("https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_of_Senegal.svg", width=90)
     with col2:
-        st.markdown('<div class="main-title">Q-Seq BioScanner <span style="font-size:0.4em; border:1px solid lime; padding:2px 5px; border-radius:5px;">V2.1</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="main-title">Q-Seq BioScanner <span style="font-size:0.4em; border:1px solid lime; padding:2px 5px; border-radius:5px;">V1.1</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="sub-title">Détection Précoce & Analyse de Séquences Réelles</div>', unsafe_allow_html=True)
 
     st.divider()
