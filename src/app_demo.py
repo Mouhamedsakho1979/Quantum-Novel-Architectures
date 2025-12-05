@@ -20,10 +20,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS PROFESSIONNEL (V 2.0) ---
+# --- CSS PROFESSIONNEL (V 2.1 - GRAPHICS RESTORED) ---
 st.markdown("""
     <style>
         /* Toolbar et Footer cachés */
+        [data-testid="stToolbar"] {visibility: hidden !important; height: 0px !important;}
         footer {visibility: hidden !important;}
         [data-testid="stDecoration"] {display: none;}
 
@@ -43,6 +44,7 @@ st.markdown("""
             font-weight: bold;
             padding-top: 10px;
         }
+        .sub-title {color: #CCCCCC; font-size: 1.2em;}
         
         /* Cartes de données */
         .metric-card {
@@ -52,13 +54,6 @@ st.markdown("""
             background-color: #1a1a1a;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             margin-bottom: 20px;
-        }
-        
-        /* Highlight Mutation */
-        .mutation-highlight {
-            color: #FF4B4B;
-            font-weight: bold;
-            text-decoration: underline;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -85,25 +80,16 @@ class GeneticQuantumScanner(nn.Module):
 
 # --- FONCTIONS PHASE 2 : BIOLOGIE RÉELLE ---
 def get_hbb_sequence(is_sick):
-    """
-    Simule une partie du gène de l'hémoglobine (HBB).
-    Sain : ... CCT GAG GAG ... (Code pour l'acide glutamique)
-    Malade (Drépanocytose) : ... CCT GTG GAG ... (Mutation A -> T, Code pour la Valine)
-    """
-    # Séquence de base (contexte génétique)
+    # Séquence de base (contexte génétique HBB)
     base_part1 = "ATGGTGCACCTGACTCCT"
     base_part2 = "GAGAAGTCTGCCGTTACT"
     
     if is_sick:
-        # La mutation fatale : GTG au lieu de GAG
-        middle = "GTG" 
+        middle = "GTG" # Mutation
     else:
-        # La version saine : GAG
-        middle = "GAG"
+        middle = "GAG" # Sain
         
     full_seq = base_part1 + middle + base_part2
-    # On coupe pour simuler une fenêtre de lecture de 12 bases pour l'IA
-    # On s'assure que la mutation est dedans
     start_index = len(base_part1) - 4
     return full_seq[start_index : start_index + 12]
 
@@ -119,38 +105,35 @@ def main():
                                         ["Gène HBB (Drépanocytose)", "Mutation Synthétique (Cancer GGG)"])
     
     st.sidebar.markdown("### 2. Sensibilité IA")
-    # C'est ici que se joue la détection précoce !
     sensitivity = st.sidebar.slider("Seuil de Détection (Threshold)", 0.0, 1.0, 0.85, 
-                                    help="Plus le seuil est bas, plus l'IA est paranoïaque (Détection Précoce). Plus il est haut, plus elle est sûre d'elle.")
+                                    help="Seuil bas = Alerte facile (Détection Précoce).")
     
     st.sidebar.markdown("---")
-    st.sidebar.caption(f"Backend : Simulateur PennyLane\nArchitecte : Sadio Diagne")
+    st.sidebar.caption(f"Architecte : Sadio Diagne")
 
     # --- MAIN ---
     col1, col2 = st.columns([1, 6])
     with col1:
         st.image("https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_of_Senegal.svg", width=90)
     with col2:
-        st.markdown('<div class="main-title">Q-Seq BioScanner <span style="font-size:0.4em; border:1px solid lime; padding:2px 5px; border-radius:5px;">V2.0</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="main-title">Q-Seq BioScanner <span style="font-size:0.4em; border:1px solid lime; padding:2px 5px; border-radius:5px;">V2.1</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="sub-title">Détection Précoce & Analyse de Séquences Réelles</div>', unsafe_allow_html=True)
 
     st.divider()
 
     col_left, col_right = st.columns([1, 1])
     
-    # --- COLONNE GAUCHE : PRÉLÈVEMENT ---
+    # --- COLONNE GAUCHE ---
     with col_left:
         st.subheader("🧬 Séquençage Biologique")
         st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         
         if st.button("EXTRAIRE ADN PATIENT", use_container_width=True):
-            # Génération intelligente selon le mode choisi
             is_sick = np.random.rand() > 0.5
             
             if "Drépanocytose" in disease_mode:
                 seq_str = get_hbb_sequence(is_sick)
             else:
-                # Mode Cancer (Ancien mode)
                 chars = ['A', 'C', 'G', 'T']
                 raw = np.random.choice(chars, 12)
                 if is_sick: raw[4:7] = ['G', 'G', 'G']
@@ -169,7 +152,8 @@ def main():
                 if base == 'C': color = '#FFD700'
                 if base == 'G': color = '#FF4B4B'
                 if base == 'T': color = '#1E90FF'
-                html_dna += f"<span style='font-size: 1.5em; font-family: monospace; padding: 0 4px; color: {color}'>{base}</span>"
+                # Adaptation pour mode clair/sombre avec fond gris léger
+                html_dna += f"<span style='font-size: 1.5em; font-family: monospace; padding: 2px 4px; border-radius:3px; background-color:rgba(100,100,100,0.2); color: {color}'>{base}</span>"
             
             st.markdown(f"<div style='text-align: center; margin: 15px 0; letter-spacing: 2px;'>{html_dna}</div>", unsafe_allow_html=True)
             st.caption(f"Cible : {disease_mode}")
@@ -178,102 +162,120 @@ def main():
             
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Matrice d'Attention (Visualisation de la "Pensée" de l'IA)
+        # --- GRAPH 1 : HEATMAP RESTAURÉE ---
         if 'analyzed' in st.session_state and st.session_state['analyzed']:
             st.write("")
-            st.markdown("##### Focus de l'Attention Quantique")
-            # Simulation : L'IA se concentre sur la zone centrale (là où est la mutation)
-            attn_map = np.random.rand(12, 12) * 0.3
+            st.subheader("Visualisation : Attention Quantique")
+            # Simulation réaliste : L'IA regarde le centre si c'est malade
+            attn_map = np.random.rand(8, 8) * 0.3
             if st.session_state['result']:
-                attn_map[4:8, 4:8] += 0.7 # Hotspot sur la mutation
+                attn_map[2:6, 2:6] += 0.8 # Focus fort sur la mutation
             
-            fig_hm = go.Figure(data=go.Heatmap(z=attn_map, colorscale='Inferno', showscale=False))
-            fig_hm.update_layout(height=250, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor='rgba(0,0,0,0)')
+            fig_hm = go.Figure(data=go.Heatmap(
+                z=attn_map, 
+                colorscale='Viridis',
+                showscale=True
+            ))
+            fig_hm.update_layout(
+                height=300, 
+                margin=dict(l=10, r=10, t=10, b=10), 
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#888')
+            )
             st.plotly_chart(fig_hm, use_container_width=True)
 
-    # --- COLONNE DROITE : DIAGNOSTIC PRÉCOCE ---
+    # --- COLONNE DROITE ---
     with col_right:
         st.subheader("🩺 Diagnostic Quantique")
         
         if 'dna_seq_str' in st.session_state:
             btn_label = "SCANNER LE GÈNE"
             if st.button(btn_label, type="primary", use_container_width=True):
-                with st.spinner("Recherche d'interférences pathologiques..."):
-                    time.sleep(1.5)
+                with st.spinner("Calcul des interférences Hamiltoniennes..."):
+                    time.sleep(1.2)
                 
-                # --- LOGIQUE DE DÉTECTION AVANCÉE ---
                 seq = st.session_state['dna_seq_str']
                 
-                # Calcul d'un "Score de Maladie" (Probabilité brute entre 0 et 1)
-                # C'est ce que sort vraiment le neurone final
-                raw_score = 0.1 # Base saine
-                
-                # Si mutation présente, le score monte
+                # Logique Score
                 if "Drépanocytose" in disease_mode:
-                    if "GTG" in seq: raw_score = np.random.uniform(0.75, 0.99)
-                    else: raw_score = np.random.uniform(0.01, 0.30)
+                    if "GTG" in seq: raw_score = np.random.uniform(0.80, 0.99)
+                    else: raw_score = np.random.uniform(0.01, 0.25)
                 else:
-                    if "GGG" in seq: raw_score = np.random.uniform(0.75, 0.99)
-                    else: raw_score = np.random.uniform(0.01, 0.30)
+                    if "GGG" in seq: raw_score = np.random.uniform(0.80, 0.99)
+                    else: raw_score = np.random.uniform(0.01, 0.25)
                 
-                # DÉCISION BASÉE SUR LE SLIDER (Sensibilité)
-                # Si le score dépasse la sensibilité définie par le médecin, on alerte
-                # Note : Inversion logique pour le slider -> Seuil bas = Alerte facile
-                threshold = 1.0 - sensitivity + 0.5 # Ajustement mathématique simple
-                if threshold > 0.9: threshold = 0.9
-                if threshold < 0.1: threshold = 0.1
+                # Seuil dynamique
+                trigger_level = 1.0 - (sensitivity * 0.6) 
+                if trigger_level < 0.2: trigger_level = 0.2 # Sécurité
                 
-                # Simplification pour la démo : On compare directement
-                # Si Slider Sensibilité est haut (ex: 0.9), on veut détecter même les scores faibles
-                # Pour la démo, on va dire :
-                # Seuil de déclenchement = 1 - (Sensibilité / 2)
-                trigger_level = 1.0 - (sensitivity * 0.5) 
-                
-                # Correction logique démo :
-                # Si Sick -> Score ~0.9. Si Healthy -> Score ~0.1
-                # Si Sensibilité 1.0 (Max), on veut que ça sonne tout le temps ou presque.
-                
-                is_detected = False
-                
-                # Vraie logique simple pour la démo :
-                if raw_score > 0.5: # L'IA "pense" que c'est malade
-                    is_detected = True
-                    conf = raw_score
-                else:
-                    # Cas subtil : Si c'est malade "un peu" (début de cancer)
-                    # Ici on simule que l'IA a un doute
-                    pass
+                is_detected = raw_score > trigger_level
 
                 st.session_state['analyzed'] = True
                 st.session_state['result'] = is_detected
                 st.session_state['raw_score'] = raw_score
 
-            # --- AFFICHAGE DES RÉSULTATS ---
             if st.session_state.get('analyzed'):
                 st.markdown('<div class="metric-card">', unsafe_allow_html=True)
                 
                 score = st.session_state['raw_score']
                 display_conf = score * 100
                 
-                # Jauge de probabilité
                 st.write(f"Probabilité d'Anomalie : **{display_conf:.1f}%**")
-                st.progress(int(display_conf))
+                # Couleur de la barre change selon le danger
+                bar_color = "red" if score > 0.5 else "green"
+                st.markdown(f"""
+                <div style="width:100%; background-color:#333; border-radius:5px; height:10px;">
+                    <div style="width:{int(display_conf)}%; background-color:{bar_color}; height:10px; border-radius:5px;"></div>
+                </div>
+                <br>
+                """, unsafe_allow_html=True)
                 
-                # Décision Finale
                 if st.session_state['result']:
                     st.markdown(f"<h2 style='color: #FF4B4B; margin:0;'>⚠️ MUTATION DÉTECTÉE</h2>", unsafe_allow_html=True)
                     st.markdown("---")
                     if "Drépanocytose" in disease_mode:
-                        st.error("Gène HBB altéré : Codon GTG (Valine) identifié.")
-                        st.caption("Conséquence : Formation d'hémoglobine S (Falciformation).")
+                        st.error("Gène HBB altéré : Codon GTG (Valine).")
                     else:
                         st.error("Motif GGG critique identifié.")
                 else:
                     st.markdown(f"<h2 style='color: #00FF00; margin:0;'>✅ SÉQUENCE NOMINALE</h2>", unsafe_allow_html=True)
                     st.markdown("---")
-                    st.success("Aucune perturbation détectée dans l'espace de Hilbert.")
+                    st.success("Aucune perturbation détectée.")
                 
                 st.markdown('</div>', unsafe_allow_html=True)
+
+                # --- GRAPH 2 : SPHÈRE 3D RESTAURÉE ---
+                st.write("")
+                st.subheader("État du Qubit Superposé")
+                
+                u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+                x = np.cos(u)*np.sin(v)
+                y = np.sin(u)*np.sin(v)
+                z = np.cos(v)
+                
+                # Position du point sur la sphère (Haut = Sain, Bas = Malade)
+                point_z = 1 if not st.session_state['result'] else -1
+                point_color = '#00FF00' if not st.session_state['result'] else '#FF4B4B'
+                
+                fig_bloch = go.Figure(data=[
+                    go.Surface(x=x, y=y, z=z, opacity=0.2, showscale=False, colorscale='Blues'),
+                    go.Scatter3d(x=[0], y=[0], z=[point_z], mode='markers', marker=dict(size=12, color=point_color))
+                ])
+                fig_bloch.update_layout(
+                    title="Projection Espace de Hilbert",
+                    scene=dict(
+                        xaxis=dict(visible=False), 
+                        yaxis=dict(visible=False), 
+                        zaxis=dict(visible=False),
+                        bgcolor='rgba(0,0,0,0)'
+                    ),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    height=300,
+                    margin=dict(l=0, r=0, b=0, t=30),
+                    font=dict(color='#888')
+                )
+                st.plotly_chart(fig_bloch, use_container_width=True)
 
     st.markdown("---")
     st.markdown("<div style='text-align: center; color: #555;'>Projet de Recherche QAI - Dakar 2025</div>", unsafe_allow_html=True)
