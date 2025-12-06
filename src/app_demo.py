@@ -428,7 +428,7 @@ def main():
     with col1:
         st.image("https://upload.wikimedia.org/wikipedia/commons/f/fd/Flag_of_Senegal.svg", width=90)
     with col2:
-        st.markdown('<div class="main-title">Q-Seq BioScanner <span style="font-size:0.4em; border:1px solid lime; padding:2px 5px; border-radius:5px;">V3.0</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="main-title">Q-Seq BioScanner <span style="font-size:0.4em; border:1px solid lime; padding:2px 5px; border-radius:5px;">V1.0</span></div>', unsafe_allow_html=True)
         st.markdown('<div class="sub-title">Détection Précoce & Analyse de Séquences Réelles</div>', unsafe_allow_html=True)
 
     st.divider()

@@ -10,13 +10,13 @@ from Bio import Entrez, SeqIO
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.models.qw_attn.transformer import QuantumTransformerBlock
 
-# --- CONFIGURATION ULTIME ---
+# --- CONFIGURATION MULTI-MALADIES ---
 Entrez.email = "researcher.senegal@quantum-lab.sn"
 GENE_ID = "NM_000518" 
 SEQ_LEN = 8
-N_QUBITS = 6         # UPGRADE : 6 Qubits (Plus d'espace mental)
-EPOCHS = 150
-SAMPLES = 1000
+N_QUBITS = 6         # On garde 6 Qubits (Architecture App V3)
+EPOCHS = 200         # On garde l'entraînement long
+SAMPLES = 2000       # AUGMENTATION : Il faut plus de données pour apprendre 2 maladies
 SAVE_PATH = "src/q_seq_brain.pth"
 
 # --- 1. DATASET ---
@@ -32,7 +32,10 @@ def create_dataset(real_gene, n_samples):
     X, y = [], []
     max_start = len(real_gene) - SEQ_LEN - 1
     
-    print(f"🧬 Génération de {n_samples} échantillons avec Positionnement...")
+    print(f"🧬 Génération de {n_samples} échantillons (Drépanocytose + Cancer)...")
+    
+    count_hbb = 0
+    count_cancer = 0
     
     for _ in range(n_samples):
         is_sick = np.random.rand() > 0.5
@@ -41,62 +44,57 @@ def create_dataset(real_gene, n_samples):
         
         label = 0.0
         if is_sick:
-            # On place la mutation TOUJOURS au même endroit relatif pour aider l'IA au début
-            # C'est comme lui apprendre à regarder au centre de l'image
-            mid = 3 
-            seq_str[mid] = 'G'
-            seq_str[mid+1] = 'T'
-            seq_str[mid+2] = 'G'
             label = 1.0
+            mid = 3 # On cible le milieu pour l'apprentissage
+            
+            # --- LA CLÉ DU MULTI-CIBLES ---
+            # Une fois sur deux, on injecte la Drépanocytose, l'autre fois le Cancer
+            if np.random.rand() > 0.5:
+                # DRÉPANOCYTOSE (HBB) -> GTG
+                seq_str[mid] = 'G'
+                seq_str[mid+1] = 'T'
+                seq_str[mid+2] = 'G'
+                count_hbb += 1
+            else:
+                # CANCER (Mutation Synthétique) -> GGG
+                seq_str[mid] = 'G'
+                seq_str[mid+1] = 'G'
+                seq_str[mid+2] = 'G'
+                count_cancer += 1
         
+        # Encodage Numérique (0,1,2,3)
         mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
         vec = [mapping.get(base, 0) for base in seq_str]
         X.append(vec)
         y.append(label)
-        
+    
+    print(f"   - Cas Drépanocytose générés : {count_hbb}")
+    print(f"   - Cas Cancer générés : {count_cancer}")
     return torch.tensor(X, dtype=torch.long), torch.tensor(y, dtype=torch.float32).view(-1, 1)
 
-# --- 2. ARCHITECTURE AVEC "GPS" (Positional Encoding) ---
+# --- 2. ARCHITECTURE (Identique à l'App V3 pour compatibilité) ---
 class GeneticQuantumScanner(nn.Module):
     def __init__(self, n_qubits, seq_len):
         super().__init__()
-        
-        # 1. Embedding des Lettres (A,C,G,T -> Vecteur)
         self.token_embedding = nn.Embedding(4, n_qubits)
-        
-        # 2. Embedding de Position (Le GPS : Position 1, 2, 3... -> Vecteur)
-        # C'est ÇA qui manquait !
         self.position_embedding = nn.Embedding(seq_len, n_qubits)
-        
-        # 3. Cœur Quantique
         self.q_transformer = QuantumTransformerBlock(n_qubits, seq_len)
-        
-        # 4. Décision
         self.pooling = nn.AdaptiveAvgPool1d(1)
         self.classifier = nn.Sequential(
             nn.Linear(n_qubits, 64),
             nn.ReLU(),
-            nn.Dropout(0.1), # Évite le par cœur
+            nn.Dropout(0.1),
             nn.Linear(64, 1),
             nn.Sigmoid()
         )
 
     def forward(self, x):
-        # x est [Batch, SeqLen]
         batch_size, seq_len = x.shape
-        
-        # On crée les indices de position [0, 1, 2, 3, 4, 5, 6, 7]
-        positions = torch.arange(0, seq_len).unsqueeze(0).repeat(batch_size, 1)
-        
-        # Fusion : Sens des Lettres + Sens de la Position
+        positions = torch.arange(0, seq_len).unsqueeze(0).repeat(batch_size, 1).to(x.device)
         tokens = self.token_embedding(x)
         pos = self.position_embedding(positions)
-        
-        x = tokens + pos # L'addition magique des Transformers
-        
-        # Analyse Quantique
+        x = tokens + pos 
         x = self.q_transformer(x)
-        
         x = x.transpose(1, 2)
         x = self.pooling(x).squeeze(-1)
         return self.classifier(x)
@@ -108,13 +106,12 @@ def train():
     
     model = GeneticQuantumScanner(N_QUBITS, SEQ_LEN)
     
-    # Scheduler : On commence vite, on ralentit à la fin
+    # Scheduler dynamique
     optimizer = torch.optim.Adam(model.parameters(), lr=0.03)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
-    
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=60, gamma=0.5)
     criterion = nn.BCELoss()
     
-    print("\n🚀 Lancement de l'Entraînement ULTIME...")
+    print("\n🚀 Entraînement Multi-Pathologies en cours...")
     
     for epoch in range(EPOCHS):
         optimizer.zero_grad()
@@ -122,24 +119,19 @@ def train():
         loss = criterion(outputs, y_train)
         loss.backward()
         optimizer.step()
-        scheduler.step() # On réduit la vitesse
+        scheduler.step()
         
         predicted = (outputs > 0.5).float()
         acc = (predicted == y_train).sum() / y_train.shape[0]
         
-        if epoch % 10 == 0:
-            current_lr = optimizer.param_groups[0]['lr']
-            print(f"Époque {epoch}/{EPOCHS} | Loss: {loss.item():.4f} | Précision: {acc*100:.1f}% | LR: {current_lr:.4f}")
+        if epoch % 20 == 0:
+            lr = optimizer.param_groups[0]['lr']
+            print(f"Époque {epoch}/{EPOCHS} | Loss: {loss.item():.4f} | Précision: {acc*100:.1f}% | LR: {lr:.4f}")
 
     print(f"\n🏆 Score Final : {acc*100:.1f}%")
     
-    if acc > 0.90:
-        print("✅ VICTOIRE TOTALE : L'IA est opérationnelle.")
-    else:
-        print(f"⚠️ Score : {acc*100:.1f}%. C'est suffisant pour une démo, mais retente si tu veux.")
-        
     torch.save(model.state_dict(), SAVE_PATH)
-    print("💾 Cerveau sauvegardé.")
+    print("💾 Nouveau Cerveau 'Bi-Spécialiste' sauvegardé.")
 
 if __name__ == "__main__":
     train()
